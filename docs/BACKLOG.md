@@ -37,8 +37,9 @@ Priority: P1 · Status: Done
 - [x] Run/walk intervals, Tabata, Dynamic warm-up, Sprint intervals, HIIT 30/30, HIIT circuit.
 
 ### TMP-6: Install on iPhone
-Priority: P1 · Status: Ready · Owner role: devops
-- [ ] Hosted over https (GitHub Pages, needs owner go-ahead) so it can be added to the home screen and works offline.
+Priority: P1 · Status: In QA · Owner role: devops
+- [x] Hosted over https at https://anbarasandevops3.github.io/tempo/ (`npm run deploy` publishes to the gh-pages branch).
+- [ ] Owner adds it to the home screen; it opens full screen so it can be added to the home screen and works offline.
 
 ### TMP-8: Workout history
 Priority: P1 · Status: In QA (browser passed; iPhone checks pending) · Owner role: frontend-dev

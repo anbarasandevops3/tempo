@@ -23,6 +23,7 @@ npm run dev        # http://localhost:5173, and http://<laptop-ip>:5173 for the 
 npm test           # Vitest
 npm run build      # type-check + production build in dist/
 npm run voices     # regenerate public/voice/ after changing PHRASES
+npm run deploy     # test, build, publish to GitHub Pages (https://anbarasandevops3.github.io/tempo/)
 ```
 Recreate the Python tools if `tools/.venv` is missing:
 ```bash
