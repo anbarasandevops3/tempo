@@ -22,4 +22,9 @@ iOS version: ______  Date: ______  Build/URL: ______
 - [ ] B5. Added to the home screen: opens full screen, no Safari bars. (needs https hosting)
 - [ ] B6. Airplane mode: the home-screen app still opens and runs a workout. (needs https hosting)
 
+## C. History
+- [ ] C1. Finish a workout with the screen locked; unlock: History shows it as ✓ Done with the full time.
+- [ ] C2. Stop a workout halfway: History shows "Stopped" with the right time; the calendar marks today.
+- [ ] C3. Swipe the app away mid-workout, reopen, Discard: History shows it as Stopped with about the right time.
+
 Notes / bugs:

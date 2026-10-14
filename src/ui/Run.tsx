@@ -1,21 +1,23 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
-import type { Workout } from '../model/types';
+import { newId, type Workout } from '../model/types';
 import { compile, formatClock, segmentAt, type Timeline } from '../model/timeline';
 import { buildCues } from '../audio/cues';
 import { renderTrack } from '../audio/render';
 import { loadVoicePack } from '../audio/voice';
 import { Player } from '../player/player';
-import { saveSession } from '../store/store';
+import { addHistory, finishStopped, loadHistory, saveSession, updateHistory } from '../store/store';
 
 interface Props {
   workout: Workout;
   resumeAt?: number;
+  /** History entry of the run being resumed. */
+  resumeEntryId?: string;
   onExit(): void;
 }
 
 type Phase = 'preparing' | 'ready' | 'running' | 'done' | 'error';
 
-export function Run({ workout, resumeAt, onExit }: Props) {
+export function Run({ workout, resumeAt, resumeEntryId, onExit }: Props) {
   const [phase, setPhase] = useState<Phase>('preparing');
   const [error, setError] = useState('');
   const [pos, setPos] = useState(resumeAt ?? 0);
@@ -24,6 +26,10 @@ export function Run({ workout, resumeAt, onExit }: Props) {
   const playerRef = useRef<Player | undefined>(undefined);
   const tlRef = useRef<Timeline>(compile(workout));
   const tl = tlRef.current;
+  // History: the entry this run is logged under, and time already done before a resume.
+  const entryRef = useRef<string | undefined>(undefined);
+  const baseDoneRef = useRef(0);
+  const doneSec = () => baseDoneRef.current + (playerRef.current?.played ?? 0);
 
   // Build the audio track once.
   useEffect(() => {
@@ -33,7 +39,11 @@ export function Run({ workout, resumeAt, onExit }: Props) {
         if (cancelled) return;
         const wav = renderTrack(buildCues(tl, workout.cues), tl.total, pack);
         const player = new Player(wav, tl, workout.name, {
-          onEnded: () => { saveSession(undefined); setPhase('done'); },
+          onEnded: () => {
+            if (entryRef.current) updateHistory(entryRef.current, { doneSec: doneSec(), status: 'completed' });
+            saveSession(undefined);
+            setPhase('done');
+          },
           onPlayState: setPlaying,
         });
         playerRef.current = player;
@@ -62,7 +72,9 @@ export function Run({ workout, resumeAt, onExit }: Props) {
     };
     const persist = () => {
       const pl = playerRef.current;
-      if (pl && pl.position < tl.total) saveSession({ workoutId: workout.id, position: pl.position, savedAt: Date.now() });
+      if (!pl || pl.position >= tl.total) return;
+      saveSession({ workoutId: workout.id, position: pl.position, savedAt: Date.now(), entryId: entryRef.current });
+      if (entryRef.current) updateHistory(entryRef.current, { doneSec: doneSec() });
     };
     const id = setInterval(tick, 100);
     document.addEventListener('visibilitychange', persist);
@@ -95,7 +107,21 @@ export function Run({ workout, resumeAt, onExit }: Props) {
   const start = () => {
     const pl = playerRef.current;
     if (!pl) return;
-    pl.play().then(() => setPhase('running')).catch((e: unknown) => { setError(String(e)); setPhase('error'); });
+    pl.play().then(() => { openEntry(); setPhase('running'); }).catch((e: unknown) => { setError(String(e)); setPhase('error'); });
+  };
+  const openEntry = () => {
+    const existing = resumeEntryId ? loadHistory().find((e) => e.id === resumeEntryId) : undefined;
+    if (existing) {
+      entryRef.current = existing.id;
+      baseDoneRef.current = existing.doneSec;
+      return;
+    }
+    const id = newId();
+    addHistory({
+      id, workoutId: workout.id, name: workout.name, startedAt: Date.now(),
+      plannedSec: tl.total, doneSec: 0, status: 'active',
+    });
+    entryRef.current = id;
   };
   const toggle = () => {
     const pl = playerRef.current;
@@ -104,6 +130,7 @@ export function Run({ workout, resumeAt, onExit }: Props) {
   };
   const stop = () => {
     if (phase === 'running' && !confirm('Stop this workout?')) return;
+    if (entryRef.current && phase === 'running') finishStopped(entryRef.current, doneSec());
     saveSession(undefined);
     onExit();
   };

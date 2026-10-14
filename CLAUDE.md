@@ -9,10 +9,10 @@ is that the timer never stops, drifts or goes silent, including with the screen 
 
 ## Stack and layout
 - Vite + Preact + TypeScript, plain CSS, Vitest. No backend; data in localStorage.
-- `src/model/`: workout types, templates, tree edits, timeline compiler (pure, tested)
+- `src/model/`: workout types, templates, tree edits, timeline compiler, history stats (pure, tested)
 - `src/audio/`: cue builder, WAV renderer, voice pack loader (pure, tested)
 - `src/player/`: playback, Media Session (lock-screen controls)
-- `src/ui/`: Home, Editor, Run screens. `src/store/`: localStorage.
+- `src/ui/`: Home, Editor, Run, History screens. `src/store/`: localStorage.
 - `public/voice/`: generated voice pack (committed). `public/sw.js`: offline cache. `public/manifest.webmanifest`, icons.
 - `tools/make_voice_pack.py` (Piper TTS) and `tools/make_icons.py` (Pillow). Python venv in `tools/.venv`, voice model in `tools/voices/` (both git-ignored).
 - Design: [docs/adr/001-rendered-audio-track.md](docs/adr/001-rendered-audio-track.md).

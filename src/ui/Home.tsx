@@ -2,12 +2,15 @@ import { useState } from 'preact/hooks';
 import { DEFAULT_CUES, newId, type Workout } from '../model/types';
 import { compile, formatClock } from '../model/timeline';
 import { TEMPLATES } from '../model/templates';
+import { lastDone, relativeDay } from '../model/history';
+import { loadHistory } from '../store/store';
 
 interface Props {
   workouts: Workout[];
   resume?: { workout: Workout; position: number };
   onResume(): void;
   onDiscardResume(): void;
+  onHistory(): void;
   onStart(w: Workout): void;
   onEdit(w: Workout): void;
   onCreate(w: Workout): void;
@@ -15,12 +18,17 @@ interface Props {
 
 export function Home(p: Props) {
   const [picking, setPicking] = useState(false);
+  const history = loadHistory();
+  const now = Date.now();
 
   return (
     <div class="screen">
       <header class="bar">
         <h1>Tempo</h1>
-        <button class="btn primary" onClick={() => setPicking(true)}>+ New</button>
+        <div class="row">
+          <button class="btn" onClick={p.onHistory}>History</button>
+          <button class="btn primary" onClick={() => setPicking(true)}>+ New</button>
+        </div>
       </header>
 
       {p.resume && (
@@ -41,11 +49,14 @@ export function Home(p: Props) {
       <ul class="list">
         {p.workouts.map((w) => {
           const tl = compile(w);
+          const last = lastDone(history, w.id);
+          const count = tl.segments.filter((s) => s.kind !== 'ready').length;
           return (
             <li class="card workout" key={w.id}>
               <button class="workout-main" onClick={() => p.onStart(w)}>
                 <span class="workout-name">{w.name}</span>
-                <span class="muted">{formatClock(tl.total)} · {tl.segments.filter((s) => s.kind !== 'ready').length} intervals</span>
+                <span class="muted">{formatClock(tl.total)} · {count} {count === 1 ? 'interval' : 'intervals'}</span>
+                {last !== undefined && <span class="muted small">Last done {relativeDay(last, now)}</span>}
               </button>
               <button class="btn ghost" onClick={() => p.onEdit(w)} aria-label={`Edit ${w.name}`}>Edit</button>
             </li>

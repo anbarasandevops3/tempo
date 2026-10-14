@@ -40,13 +40,22 @@ Priority: P1 · Status: Done
 Priority: P1 · Status: Ready · Owner role: devops
 - [ ] Hosted over https (GitHub Pages, needs owner go-ahead) so it can be added to the home screen and works offline.
 
+### TMP-8: Workout history
+Priority: P1 · Status: In QA (browser passed; iPhone checks pending) · Owner role: frontend-dev
+Story: As the runner, I want every workout logged automatically so I can see how consistent I am.
+Acceptance criteria:
+- [x] Start creates an entry (date, workout, planned time); time done is saved every 2 s and when the app is hidden, so a killed app still keeps the log.
+- [x] Time done = time actually played; skipping ahead doesn't count.
+- [x] Finished → "✓ Done". Stopped → "Stopped x%". Stopped with under 30 s played → not logged (accidental start).
+- [x] Resuming continues the same entry; discarding the resume closes it as stopped.
+- [x] History screen: workouts and minutes this week (vs last week), day streak, minutes per week (8 weeks), month calendar, list by day; delete an entry with confirmation.
+- [x] Home shows "Last done …" per workout.
+- [ ] iPhone: a workout finished with the screen locked is logged as Done with the full time (checklist C1).
+
 ## Next
 
 ### TMP-7: Android app
 Priority: P2 · Status: Idea · Planned for the weekend. Native Kotlin with a foreground service, or the same PWA. Add an `android-dev` role.
-
-### TMP-8: Workout history
-Priority: P3 · Status: Idea · Log finished workouts (date, name, duration).
 
 ### TMP-9: Vibration cues
 Priority: P3 · Status: Idea · Not possible in iPhone web apps; Android only.

@@ -11,6 +11,9 @@ export interface PlayerHandlers {
 export class Player {
   readonly audio: HTMLAudioElement;
   private url: string;
+  // Played time = sum of the stretches between seeks, so skipping ahead doesn't count as training.
+  private playedBefore = 0;
+  private stretchStart = 0;
 
   constructor(
     wav: Uint8Array,
@@ -35,6 +38,11 @@ export class Player {
     return this.audio.currentTime;
   }
 
+  /** Seconds of the track actually played (excluding skipped parts), capped at the workout length. */
+  get played(): number {
+    return Math.min(this.timeline.total, this.playedBefore + Math.max(0, this.stretchEnd() - this.stretchStart));
+  }
+
   get playing(): boolean {
     return !this.audio.paused && !this.audio.ended;
   }
@@ -49,7 +57,9 @@ export class Player {
   }
 
   seek(t: number): void {
+    this.playedBefore += Math.max(0, this.stretchEnd() - this.stretchStart);
     this.audio.currentTime = Math.max(0, Math.min(t, this.timeline.total));
+    this.stretchStart = this.audio.currentTime;
     this.updateMediaSession();
   }
 
@@ -96,6 +106,10 @@ export class Player {
       }
       navigator.mediaSession.metadata = null;
     }
+  }
+
+  private stretchEnd(): number {
+    return Math.min(this.audio.currentTime, this.timeline.total);
   }
 
   private setupMediaSession() {
