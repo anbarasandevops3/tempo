@@ -53,13 +53,38 @@ Acceptance criteria:
 - [x] Home shows "Last done …" per workout.
 - [ ] iPhone: a workout finished with the screen locked is logged as Done with the full time (checklist C1).
 
-## Next
+## 0.2.0: Android app + backups
 
-### TMP-7: Android app
-Priority: P2 · Status: Idea · Planned for the weekend. Native Kotlin with a foreground service, or the same PWA. Add an `android-dev` role.
+### TMP-7: Native Android app
+Priority: P1 · Status: In Dev · Owner role: android-dev
+Story: As the runner with an Android phone, I want Tempo as a real Android app that can't be stopped mid-workout.
+Acceptance criteria:
+- [ ] Same screens and behaviour as the web app: home, editor, templates, run, history, resume.
+- [ ] Same rendered track (voice pack + beeps) played by a foreground service; keeps running with the screen off and the app swiped away.
+- [ ] Phone call: pauses, then resumes by itself afterwards.
+- [ ] Installs from an APK (min Android 8).
 
-### TMP-9: Vibration cues
-Priority: P3 · Status: Idea · Not possible in iPhone web apps; Android only.
+### TMP-11: Live countdown in the notification and on the lock screen
+Priority: P1 · Status: In Dev · Owner role: android-dev
+- [ ] The notification shows the current step, a live countdown to its end, and the next step; it updates at each step.
+- [ ] Pause/Play and Next buttons in the notification work from the lock screen.
+- [ ] Headphone play/pause button works.
 
-### TMP-10: Export / import workouts
-Priority: P3 · Status: Idea · JSON file or link, for backup and moving to Android.
+### TMP-12: Vibration cues (Android)
+Priority: P1 · Status: In Dev · Owner role: android-dev
+- [ ] Long buzz at each step start, short buzz on the 3-2-1, triple buzz at the end; on/off per workout.
+
+### TMP-13: Spoken custom names (Android)
+Priority: P1 · Status: In Dev · Owner role: android-dev
+- [ ] A step with a name ("Burpees") is announced by that name, using the phone's text-to-speech; if TTS isn't available, falls back to the step type.
+
+### TMP-10: Export / import backup (both apps)
+Priority: P1 · Status: In Dev · Owner role: frontend-dev + android-dev
+- [ ] Both apps export one JSON file with workouts and history (`docs/backup-format.md`).
+- [ ] Importing merges: workouts and history entries matched by id; nothing is duplicated or lost.
+- [ ] A file exported on the iPhone imports on Android and the reverse.
+
+## Later
+
+### TMP-9: GPS distance & pace (Android)
+Priority: P3 · Status: Idea · Reliable on Android with the foreground service; adds a location permission.

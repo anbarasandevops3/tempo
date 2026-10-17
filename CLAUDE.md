@@ -43,9 +43,9 @@ Each role is a subagent in `.claude/agents/`.
 | Audio engineer | `audio-engineer` | `src/audio/`, `src/player/`, voice pack, lock-screen behaviour, timer reliability | Change screens beyond the player API |
 | Frontend dev | `frontend-dev` | `src/ui/`, `src/store/`, styles, to the UX spec | Change the audio pipeline |
 | QA | `qa-engineer` | Test plans, automated + browser tests, the iPhone checklist, sign-off | Fix product code |
+| Android dev | `android-dev` | Everything in `android/`: Kotlin + Compose app, foreground service, APK | Change the web app beyond shared formats |
 | DevOps | `devops` | Versions, CHANGELOG, git, hosting, getting the app onto the phone | Push or publish without the owner's go-ahead |
 
-An `android-dev` role is added when the Android app starts.
 
 ## SDLC
 
