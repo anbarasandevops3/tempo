@@ -1,6 +1,7 @@
 # Changelog
 
 ## 0.2.0 (unreleased)
+- Clearer, louder voice: higher-quality Piper voice, 16-bit audio instead of 8-bit, every clip normalised; beeps slightly quieter than the voice.
 - Android app (native Kotlin): foreground service, live countdown notification with controls, vibration cues, spoken custom names, pause for calls.
 - Export / import backup in both apps (shared format), so workouts and history move between iPhone and Android.
 

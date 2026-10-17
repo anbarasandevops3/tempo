@@ -31,7 +31,7 @@ cd android && ./gradlew testDebugUnitTest assembleDebug   # Android tests + APK
 Recreate the Python tools if `tools/.venv` is missing:
 ```bash
 python3 -m venv tools/.venv && tools/.venv/bin/pip install piper-tts pillow
-tools/.venv/bin/python -m piper.download_voices --download-dir tools/voices en_US-lessac-medium
+tools/.venv/bin/python -m piper.download_voices --download-dir tools/voices en_US-lessac-high
 ```
 
 ## The team

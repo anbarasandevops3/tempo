@@ -6,6 +6,7 @@ import io.github.anbarasandevops3.tempo.audio.Cue
 import io.github.anbarasandevops3.tempo.audio.SAMPLE_RATE
 import io.github.anbarasandevops3.tempo.audio.WAV_HEADER
 import io.github.anbarasandevops3.tempo.audio.buildCues
+import io.github.anbarasandevops3.tempo.audio.bytesToPcm16
 import io.github.anbarasandevops3.tempo.audio.durationClips
 import io.github.anbarasandevops3.tempo.audio.nameClipKey
 import io.github.anbarasandevops3.tempo.audio.pcm16ToClip
@@ -103,14 +104,16 @@ class TempoTest {
     // --- render
 
     @Test fun rendersValidWav() {
-        val clips = ClipSource { if (it == "run") byteArrayOf(200.toByte(), 200.toByte(), 200.toByte(), 200.toByte()) else null }
+        val clips = ClipSource { if (it == "run") shortArrayOf(1000, 2000, 3000, 4000) else null }
         val tl = compile(w(listOf(step(StepKind.RUN, 20))))
         val wav = renderTrack(buildCues(tl, CueSettings(getReady = 0)), tl.total, clips)
         assertEquals("RIFF", String(wav, 0, 4))
-        assertEquals(Math.ceil(23.0 * SAMPLE_RATE).toInt(), wav.size - WAV_HEADER)
-        val at = WAV_HEADER + Math.round(0.55 * SAMPLE_RATE).toInt()
-        assertArrayEquals(ByteArray(4) { 200.toByte() }, wav.copyOfRange(at, at + 4))
-        assertEquals(128, wav[WAV_HEADER + 10 * SAMPLE_RATE].toInt() and 0xff)
+        assertEquals(16, wav[34].toInt())
+        assertEquals(Math.ceil(23.0 * SAMPLE_RATE).toInt() * 2, wav.size - WAV_HEADER)
+        val pcm = bytesToPcm16(wav, WAV_HEADER)
+        val at = Math.round(0.55 * SAMPLE_RATE).toInt()
+        assertArrayEquals(shortArrayOf(1000, 2000, 3000, 4000), pcm.copyOfRange(at, at + 4))
+        assertEquals(0, pcm[10 * SAMPLE_RATE].toInt())
     }
 
     @Test fun convertsTtsAudio() {
@@ -123,7 +126,8 @@ class TempoTest {
         }
         val clip = pcm16ToClip(pcm, rate)
         assertTrue(clip.size in (SAMPLE_RATE / 10 - 20)..(SAMPLE_RATE / 10 + 20))
-        assertTrue(clip.any { (it.toInt() and 0xff) > 200 })
+        // normalised to ~95% of full scale
+        assertTrue(clip.maxOf { it.toInt() } in 30000..32767)
     }
 
     // --- edits

@@ -8,9 +8,9 @@ You own the part of **Tempo** that must never fail: the rendered workout track a
 
 ## What you own
 - `src/audio/cues.ts`: what is said or beeped, and when. Avoid overlapping cues.
-- `src/audio/render.ts`: the WAV renderer (mono, 8-bit unsigned PCM, 11025 Hz, ~0.66 MB/min).
+- `src/audio/render.ts`: the WAV renderer (mono, 16-bit PCM, 16000 Hz on the web, ~1.9 MB/min).
 - `src/audio/voice.ts` + `tools/make_voice_pack.py`: the voice pack (Piper TTS, voice
-  `en_US-lessac-medium`). New phrases: add to `PHRASES`, run `npm run voices`, commit `public/voice/`.
+  `en_US-lessac-high`, 16-bit 22050 Hz, peak-normalised). New phrases: add to `PHRASES`, run `npm run voices`, commit `public/voice/`.
 - `src/player/player.ts`: playback, Media Session (lock-screen controls), `navigator.audioSession`.
 
 ## Rules

@@ -10,7 +10,7 @@ libraries beyond AndroidX core/activity/lifecycle/compose. JSON via the platform
 ## Design (same as the web app, ADR-001, plus ADR-002)
 - `model/` mirrors `src/model/` (timeline, templates, history, edits). Same rules, same numbers;
   when you change one side, change the other or log a story for it.
-- `audio/` mirrors `src/audio/`: the workout is rendered into one 8-bit 11025 Hz WAV in the cache
+- `audio/` mirrors `src/audio/`: the workout is rendered into one 16-bit 22050 Hz WAV in the cache
   dir, using the same voice pack (`public/voice/`, packaged as assets). Custom step names are
   synthesised with Android TextToSpeech at prepare time and mixed in.
 - `service/WorkoutService` is a `mediaPlayback` foreground service: MediaPlayer with a partial

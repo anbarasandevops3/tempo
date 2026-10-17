@@ -77,20 +77,30 @@ describe('cues', () => {
 });
 
 describe('render', () => {
-  it('writes a valid 8-bit WAV the length of the workout plus tail', () => {
-    const pack = makePack({ sampleRate: SAMPLE_RATE, clips: { run: [0, 4] } }, new Uint8Array([200, 200, 200, 200]));
+  it('writes a valid 16-bit WAV the length of the workout plus tail', () => {
+    const clip = new Int16Array([1000, 2000, 3000, 4000]);
+    const pack = makePack({ sampleRate: SAMPLE_RATE, clips: { run: [0, 8] } }, clip.buffer);
     const tl = compile(w([{ type: 'step', id: 'a', kind: 'run', seconds: 20 }]));
     const wav = renderTrack(buildCues(tl, DEFAULT_CUES), tl.total, pack);
     const dv = new DataView(wav.buffer);
     expect(String.fromCharCode(...wav.subarray(0, 4))).toBe('RIFF');
     expect(dv.getUint32(24, true)).toBe(SAMPLE_RATE);
+    expect(dv.getUint16(34, true)).toBe(16);
     expect(dv.getUint32(40, true)).toBe(wav.length - 44);
-    expect(wav.length - 44).toBe(Math.ceil((20 + 3) * SAMPLE_RATE));
+    expect((wav.length - 44) / 2).toBe(Math.ceil((20 + 3) * SAMPLE_RATE));
+    const pcm = new Int16Array(wav.buffer, 44);
     // the "run" clip is mixed in just after the start beep
-    const at = 44 + Math.round(0.55 * SAMPLE_RATE);
-    expect(Array.from(wav.subarray(at, at + 4))).toEqual([200, 200, 200, 200]);
+    const at = Math.round(0.55 * SAMPLE_RATE);
+    expect(Array.from(pcm.subarray(at, at + 4))).toEqual([1000, 2000, 3000, 4000]);
     // silence elsewhere
-    expect(wav[44 + 10 * SAMPLE_RATE]).toBe(128);
+    expect(pcm[10 * SAMPLE_RATE]).toBe(0);
+  });
+
+  it('resamples the pack to the track rate', () => {
+    const src = new Int16Array(22050).fill(500);
+    const pack = makePack({ sampleRate: 22050, clips: { x: [0, src.byteLength] } }, src.buffer, 16000);
+    expect(pack.clip('x')!.length).toBe(16000);
+    expect(pack.clip('x')![100]).toBe(500);
   });
 });
 

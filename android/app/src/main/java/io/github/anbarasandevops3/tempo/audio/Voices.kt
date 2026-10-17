@@ -13,7 +13,8 @@ import java.util.concurrent.TimeUnit
 
 /** The pre-recorded voice pack (public/voice, packaged as assets). */
 class VoicePack(private val index: Map<String, Pair<Int, Int>>, private val data: ByteArray) : ClipSource {
-    override fun clip(key: String): ByteArray? = index[key]?.let { (off, len) -> data.copyOfRange(off, off + len) }
+    /** Offsets/lengths are bytes of 16-bit PCM at SAMPLE_RATE. */
+    override fun clip(key: String): ShortArray? = index[key]?.let { (off, len) -> bytesToPcm16(data, off, len) }
 
     companion object {
         @Volatile private var cached: VoicePack? = null
@@ -38,11 +39,11 @@ class VoicePack(private val index: Map<String, Pair<Int, Int>>, private val data
  */
 class NameVoices(private val context: Context) {
     private companion object { const val TAG = "TempoTTS" }
-    private val clips = ConcurrentHashMap<String, ByteArray>()
+    private val clips = ConcurrentHashMap<String, ShortArray>()
 
-    fun clip(key: String): ByteArray? = clips[key]
+    fun clip(key: String): ShortArray? = clips[key]
 
-    fun prepare(labels: Collection<String>, timeoutSec: Long = 15): Map<String, ByteArray> {
+    fun prepare(labels: Collection<String>, timeoutSec: Long = 15): Map<String, ShortArray> {
         val wanted = labels.map { it.trim() }.filter { it.isNotEmpty() }.distinctBy { it.lowercase() }
             .filter { !clips.containsKey(nameClipKey(it)) }
         if (wanted.isEmpty()) return clips
@@ -83,8 +84,8 @@ class NameVoices(private val context: Context) {
     }
 }
 
-/** Parse a 16-bit mono PCM WAV (as written by TextToSpeech) into an 8-bit clip at SAMPLE_RATE. */
-fun readWavClip(bytes: ByteArray): ByteArray? {
+/** Parse a 16-bit PCM WAV (as written by TextToSpeech) into a clip at SAMPLE_RATE. */
+fun readWavClip(bytes: ByteArray): ShortArray? {
     fun u16(o: Int) = (bytes[o].toInt() and 0xff) or ((bytes[o + 1].toInt() and 0xff) shl 8)
     fun u32(o: Int) = u16(o) or (u16(o + 2) shl 16)
     if (bytes.size < 44 || String(bytes, 0, 4) != "RIFF" || String(bytes, 8, 4) != "WAVE") return null

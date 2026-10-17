@@ -9,7 +9,7 @@ JS-driven countdowns all stop. A playing `<audio>` element keeps playing.
 
 ## Decision
 When a workout is opened, compile it to a timeline, build every cue (voice + beeps), and render it
-into **one WAV** (mono, 8-bit unsigned PCM, 11025 Hz). Start plays it. `audio.currentTime` is the
+into **one WAV** (mono, 16-bit PCM; 16000 Hz on the web, 22050 Hz on Android). Start plays it. `audio.currentTime` is the
 only clock: the screen, skip/previous and resume all derive from it.
 
 Voice comes from a pre-recorded pack (Piper TTS, generated at build time), so it can be mixed into
@@ -17,7 +17,9 @@ the track. The voice says the step *type* (Run, Walk, Work…); custom names are
 
 ## Consequences
 - Cues survive screen lock, app switching and JS throttling; the display can't drift from the audio.
-- Track size is ~0.66 MB per minute (40 MB for an hour), kept in memory as a Blob.
+- Track size on the web is ~1.9 MB per minute (~48 MB for 25 minutes), kept in memory as a Blob.
+- 2026-10-17: moved from 8-bit 11 kHz to 16-bit after the owner found the voice rough and quiet;
+  the voice pack is now Piper `en_US-lessac-high`, 16-bit 22 kHz, normalised to -0.5 dBFS.
 - Lock-screen controls come from the Media Session API; the step name updates on the lock screen
   only when JS runs (the audio itself is unaffected).
 - Phone calls or Siri pause the audio; the runner resumes with play (lock screen or app).
