@@ -1,5 +1,5 @@
 // Network first for pages (so updates arrive), cache first for everything else (hashed assets, voice pack).
-const CACHE = 'tempo-v1';
+const CACHE = 'tempo-v2';
 
 self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', (e) => e.waitUntil(self.clients.claim()));
