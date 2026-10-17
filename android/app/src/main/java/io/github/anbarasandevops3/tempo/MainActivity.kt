@@ -8,6 +8,9 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.SystemBarStyle
+import android.graphics.Color
+import androidx.compose.material3.Surface
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -49,7 +52,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
+        enableEdgeToEdge(SystemBarStyle.dark(Color.TRANSPARENT), SystemBarStyle.dark(Color.TRANSPARENT))
         Store.init(this)
         setContent { TempoTheme { App() } }
     }
@@ -71,7 +74,8 @@ class MainActivity : ComponentActivity() {
         val run by WorkoutService.state.collectAsState()
         val home = { screen = Screen.Home }
 
-        Box(Modifier.fillMaxSize().background(Palette.bg)) {
+        // Surface sets the default text colour (light on dark) for everything inside.
+        Surface(Modifier.fillMaxSize(), color = Palette.bg, contentColor = Palette.text) { Box(Modifier.fillMaxSize()) {
             val r = run
             if (r != null) {
                 // A workout is running (or just finished): the run screen owns the display.
@@ -79,7 +83,7 @@ class MainActivity : ComponentActivity() {
                     workout = r.workout, timeline = r.timeline, run = r,
                     onStart = {}, onExit = { WorkoutService.dismiss(); home() },
                 )
-                return@Box
+                return@Surface
             }
             when (val s = screen) {
                 Screen.Home -> HomeScreen(
@@ -112,6 +116,6 @@ class MainActivity : ComponentActivity() {
                     )
                 }
             }
-        }
+        } }
     }
 }

@@ -309,7 +309,7 @@ class WorkoutService : Service() {
         mp.seekTo((t * 1000).toInt())
         stretchStart = t
         lastTickPos = t
-        publish(if (mp.isPlaying) Phase.PLAYING else Phase.PAUSED, t)
+        publish(if (mp.isPlaying) Phase.PLAYING else Phase.PAUSED, t, force = true)
         refreshNotification(t)
     }
 
@@ -350,11 +350,13 @@ class WorkoutService : Service() {
         entryId?.let { Store.updateHistory(it, doneSec()) }
     }
 
-    private fun publish(phase: Phase, pos: Double = position()) {
+    private fun publish(phase: Phase, pos: Double = position(), force: Boolean = false) {
         val w = workout ?: return
         val tl = timeline ?: return
+        val changed = _state.value?.phase != phase || force
         _state.value = RunUi(w, tl, phase, max(0.0, pos))
-        session?.setPlaybackState(PlaybackState.Builder()
+        // The system extrapolates position from the last state; only tell it about changes.
+        if (changed) session?.setPlaybackState(PlaybackState.Builder()
             .setActions(PlaybackState.ACTION_PLAY_PAUSE or PlaybackState.ACTION_PLAY or PlaybackState.ACTION_PAUSE or
                 PlaybackState.ACTION_SKIP_TO_NEXT or PlaybackState.ACTION_SKIP_TO_PREVIOUS)
             .setState(if (phase == Phase.PLAYING) PlaybackState.STATE_PLAYING else PlaybackState.STATE_PAUSED,

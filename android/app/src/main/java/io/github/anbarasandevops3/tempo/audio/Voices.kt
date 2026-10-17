@@ -3,6 +3,7 @@ package io.github.anbarasandevops3.tempo.audio
 import android.content.Context
 import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
+import android.util.Log
 import org.json.JSONObject
 import java.io.File
 import java.util.Locale
@@ -36,6 +37,7 @@ class VoicePack(private val index: Map<String, Pair<Int, Int>>, private val data
  * Names that fail are simply missing; the cue falls back to the step type.
  */
 class NameVoices(private val context: Context) {
+    private companion object { const val TAG = "TempoTTS" }
     private val clips = ConcurrentHashMap<String, ByteArray>()
 
     fun clip(key: String): ByteArray? = clips[key]
@@ -51,23 +53,28 @@ class NameVoices(private val context: Context) {
             if (!ready.await(timeoutSec, TimeUnit.SECONDS) || !ok) return clips
             tts.language = Locale.getDefault().takeIf { tts.isLanguageAvailable(it) >= TextToSpeech.LANG_AVAILABLE } ?: Locale.US
             val dir = File(context.cacheDir, "tts").apply { mkdirs() }
-            val done = CountDownLatch(wanted.size)
+            // One name at a time: some engines drop queued synthesizeToFile requests. Retry a failure once.
+            var latch = CountDownLatch(1)
+            var failed = false
             tts.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
                 override fun onStart(id: String) {}
-                override fun onDone(id: String) = done.countDown()
-                @Deprecated("Deprecated in Java") override fun onError(id: String) = done.countDown()
-                override fun onError(id: String, errorCode: Int) = done.countDown()
+                override fun onDone(id: String) = latch.countDown()
+                @Deprecated("Deprecated in Java") override fun onError(id: String) { failed = true; latch.countDown() }
+                override fun onError(id: String, errorCode: Int) { failed = true; latch.countDown() }
             })
-            val files = wanted.mapIndexed { i, label ->
+            val perName = maxOf(3L, timeoutSec / maxOf(1, wanted.size) * 2)
+            wanted.forEachIndexed { i, label ->
                 val f = File(dir, "name$i.wav")
-                f.delete()
-                tts.synthesizeToFile(label, null, f, "u$i")
-                label to f
-            }
-            done.await(timeoutSec, TimeUnit.SECONDS)
-            for ((label, f) in files) {
-                val clip = runCatching { readWavClip(f.readBytes()) }.getOrNull() ?: continue
-                if (clip.isNotEmpty()) clips[nameClipKey(label)] = clip
+                for (attempt in 1..2) {
+                    f.delete()
+                    latch = CountDownLatch(1)
+                    failed = false
+                    if (tts.synthesizeToFile(label, null, f, "u$i-$attempt") != TextToSpeech.SUCCESS) continue
+                    val finished = latch.await(perName, TimeUnit.SECONDS)
+                    val clip = if (finished && !failed) runCatching { readWavClip(f.readBytes()) }.getOrNull() else null
+                    if (clip != null && clip.isNotEmpty()) { clips[nameClipKey(label)] = clip; break }
+                }
+                Log.i(TAG, "name '$label': ${if (clips.containsKey(nameClipKey(label))) "ok" else "failed"}")
             }
         } finally {
             tts.shutdown()
