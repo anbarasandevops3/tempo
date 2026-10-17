@@ -56,7 +56,7 @@ Acceptance criteria:
 ## 0.2.0: Android app + backups
 
 ### TMP-7: Native Android app
-Priority: P1 · Status: In Dev · Owner role: android-dev
+Priority: P1 · Status: In QA (built, unit-tested; emulator + phone checks pending) · Owner role: android-dev
 Story: As the runner with an Android phone, I want Tempo as a real Android app that can't be stopped mid-workout.
 Acceptance criteria:
 - [ ] Same screens and behaviour as the web app: home, editor, templates, run, history, resume.
@@ -65,21 +65,21 @@ Acceptance criteria:
 - [ ] Installs from an APK (min Android 8).
 
 ### TMP-11: Live countdown in the notification and on the lock screen
-Priority: P1 · Status: In Dev · Owner role: android-dev
+Priority: P1 · Status: In QA (built, unit-tested; emulator + phone checks pending) · Owner role: android-dev
 - [ ] The notification shows the current step, a live countdown to its end, and the next step; it updates at each step.
 - [ ] Pause/Play and Next buttons in the notification work from the lock screen.
 - [ ] Headphone play/pause button works.
 
 ### TMP-12: Vibration cues (Android)
-Priority: P1 · Status: In Dev · Owner role: android-dev
+Priority: P1 · Status: In QA (built, unit-tested; emulator + phone checks pending) · Owner role: android-dev
 - [ ] Long buzz at each step start, short buzz on the 3-2-1, triple buzz at the end; on/off per workout.
 
 ### TMP-13: Spoken custom names (Android)
-Priority: P1 · Status: In Dev · Owner role: android-dev
+Priority: P1 · Status: In QA (built, unit-tested; emulator + phone checks pending) · Owner role: android-dev
 - [ ] A step with a name ("Burpees") is announced by that name, using the phone's text-to-speech; if TTS isn't available, falls back to the step type.
 
 ### TMP-10: Export / import backup (both apps)
-Priority: P1 · Status: In Dev · Owner role: frontend-dev + android-dev
+Priority: P1 · Status: In QA (both apps built; tested in browser + unit tests) · Owner role: frontend-dev + android-dev
 - [ ] Both apps export one JSON file with workouts and history (`docs/backup-format.md`).
 - [ ] Importing merges: workouts and history entries matched by id; nothing is duplicated or lost.
 - [ ] A file exported on the iPhone imports on Android and the reverse.

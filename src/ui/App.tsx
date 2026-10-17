@@ -46,7 +46,7 @@ export function App() {
   }
 
   if (screen.name === 'history') {
-    return <History liveEntryId={session?.entryId} onBack={home} />;
+    return <History liveEntryId={session?.entryId} onBack={home} onImported={() => setWorkouts(loadWorkouts())} />;
   }
 
   if (screen.name === 'run') {

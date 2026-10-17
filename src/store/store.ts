@@ -3,6 +3,7 @@
 import type { Workout } from '../model/types';
 import { TEMPLATES } from '../model/templates';
 import { MIN_LOG_SEC, type HistoryEntry } from '../model/history';
+import { backupFromJson, backupToJson, merge } from '../model/backup';
 
 const WORKOUTS = 'tempo.workouts.v1';
 const SESSION = 'tempo.session.v1';
@@ -91,4 +92,16 @@ export function finishStopped(id: string, doneSec: number) {
 
 export function deleteHistory(id: string) {
   saveHistory(loadHistory().filter((x) => x.id !== id));
+}
+
+export function exportBackup(): string {
+  return backupToJson({ workouts: loadWorkouts(), history: loadHistory() });
+}
+
+/** Merge a backup file into what's on the phone. Throws BackupError for bad files. */
+export function importBackup(text: string): { workouts: number; history: number } {
+  const merged = merge({ workouts: loadWorkouts(), history: loadHistory() }, backupFromJson(text));
+  saveWorkouts(merged.workouts);
+  saveHistory(merged.history);
+  return { workouts: merged.workouts.length, history: merged.history.length };
 }

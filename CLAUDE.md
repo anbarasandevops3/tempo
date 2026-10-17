@@ -1,8 +1,8 @@
 # Tempo: interval timer
 
 A personal interval timer for interval running, HIIT and warm-ups. Runs as a web app (PWA) on the
-owner's iPhone, added to the home screen from Safari. The owner is the only user and the final
-decision-maker. An Android app is planned.
+owner's iPhone, added to the home screen from Safari, and as a native Android app (`android/`).
+The owner is the only user and the final decision-maker.
 
 Why it exists: the owner's previous iPhone timer app **stopped while running**. Tempo's first rule
 is that the timer never stops, drifts or goes silent, including with the screen locked.
@@ -15,7 +15,9 @@ is that the timer never stops, drifts or goes silent, including with the screen 
 - `src/ui/`: Home, Editor, Run, History screens. `src/store/`: localStorage.
 - `public/voice/`: generated voice pack (committed). `public/sw.js`: offline cache. `public/manifest.webmanifest`, icons.
 - `tools/make_voice_pack.py` (Piper TTS) and `tools/make_icons.py` (Pillow). Python venv in `tools/.venv`, voice model in `tools/voices/` (both git-ignored).
-- Design: [docs/adr/001-rendered-audio-track.md](docs/adr/001-rendered-audio-track.md).
+- `android/`: native Kotlin + Jetpack Compose app ([docs/android.md](docs/android.md)); same model, cues and voice pack.
+- Backups shared by both apps: [docs/backup-format.md](docs/backup-format.md).
+- Design: [ADR-001](docs/adr/001-rendered-audio-track.md) (rendered audio track), [ADR-002](docs/adr/002-android-foreground-service.md) (Android foreground service).
 
 ## How to run / test / build
 ```bash
@@ -24,6 +26,7 @@ npm test           # Vitest
 npm run build      # type-check + production build in dist/
 npm run voices     # regenerate public/voice/ after changing PHRASES
 npm run deploy     # test, build, publish to GitHub Pages (https://anbarasandevops3.github.io/tempo/)
+cd android && ./gradlew testDebugUnitTest assembleDebug   # Android tests + APK
 ```
 Recreate the Python tools if `tools/.venv` is missing:
 ```bash
@@ -69,7 +72,8 @@ Ask for a role by name, e.g. "product-manager: plan workout history" or "audio-e
 
 ## Conventions
 - `docs/BACKLOG.md` is the source of truth for stories.
-- Every cue is baked into the rendered track; `audio.currentTime` is the only clock (ADR-001).
+- Every cue is baked into the rendered track; the player position is the only clock (ADR-001).
+- `src/model/` and `android/.../model/` mirror each other: change both, with tests on both sides.
 - localStorage access is always wrapped in try/catch.
 - No sudo, no pushes, no publishing without the owner's go-ahead.
 

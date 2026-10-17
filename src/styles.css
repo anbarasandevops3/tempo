@@ -182,3 +182,7 @@ h3 { margin: 24px 4px 8px; color: var(--muted); font-size: 13px; text-transform:
 .badge { font-size: 12px; padding: 4px 8px; border-radius: 999px; white-space: nowrap; background: var(--line); color: var(--muted); }
 .badge.completed { background: rgba(35,165,90,.18); color: #4ad685; }
 .badge.active { background: rgba(255,107,44,.18); color: var(--accent); }
+
+.backup { display: grid; gap: 10px; }
+.backup p { margin: 0; }
+label.btn { display: inline-flex; align-items: center; }

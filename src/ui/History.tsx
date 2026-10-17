@@ -4,14 +4,17 @@ import {
   type HistoryEntry,
 } from '../model/history';
 import { formatClock } from '../model/timeline';
-import { deleteHistory, loadHistory } from '../store/store';
+import { deleteHistory, exportBackup, importBackup, loadHistory } from '../store/store';
+import { BackupError } from '../model/backup';
 
 interface Props {
   liveEntryId?: string;
   onBack(): void;
+  /** Called after an import so the app reloads its workouts. */
+  onImported(): void;
 }
 
-export function History({ liveEntryId, onBack }: Props) {
+export function History({ liveEntryId, onBack, onImported }: Props) {
   const [entries, setEntries] = useState<HistoryEntry[]>(loadHistory);
   const [month, setMonth] = useState(() => startOfMonth(Date.now()));
   const now = Date.now();
@@ -20,6 +23,37 @@ export function History({ liveEntryId, onBack }: Props) {
   const streak = streakDays(entries, now);
   const weeks = weeklyMinutes(entries, now, 8);
   const maxMin = Math.max(1, ...weeks.map((w) => w.minutes));
+
+  const [note, setNote] = useState('');
+
+  const doExport = async () => {
+    const name = `tempo-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    const file = new File([exportBackup()], name, { type: 'application/json' });
+    // iPhone: the share sheet offers "Save to Files", AirDrop, etc.
+    if (navigator.canShare?.({ files: [file] })) {
+      try { await navigator.share({ files: [file], title: 'Tempo backup' }); setNote('Backup shared.'); } catch { /* cancelled */ }
+      return;
+    }
+    const url = URL.createObjectURL(file);
+    const a = Object.assign(document.createElement('a'), { href: url, download: name });
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    setNote('Backup downloaded.');
+  };
+
+  const doImport = async (input: HTMLInputElement) => {
+    const f = input.files?.[0];
+    input.value = '';
+    if (!f) return;
+    try {
+      const r = importBackup(await f.text());
+      setEntries(loadHistory());
+      onImported();
+      setNote(`Imported: ${r.workouts} workouts, ${r.history} history entries.`);
+    } catch (e) {
+      setNote(e instanceof BackupError ? e.message : "Couldn't read that file.");
+    }
+  };
 
   const remove = (e: HistoryEntry) => {
     if (!confirm(`Delete “${e.name}” from ${new Date(e.startedAt).toLocaleDateString()}?`)) return;
@@ -82,6 +116,19 @@ export function History({ liveEntryId, onBack }: Props) {
           </ul>
         </div>
       ))}
+
+      <h3>Backup</h3>
+      <div class="card backup">
+        <p class="muted">Save workouts and history to a file, or load one from Tempo on another phone (iPhone or Android).</p>
+        <div class="row">
+          <button class="btn" onClick={() => void doExport()}>Export backup</button>
+          <label class="btn">
+            Import backup
+            <input type="file" accept=".json,application/json" hidden onChange={(e) => void doImport(e.currentTarget)} />
+          </label>
+        </div>
+        {note && <p class="muted" role="status">{note}</p>}
+      </div>
     </div>
   );
 }
